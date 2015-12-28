@@ -1,0 +1,27 @@
+﻿@model IEnumerable<Achievement>
+<ul>
+    @{var currentGameId = 0;}
+    @foreach (var achievement in Model)
+    {
+        if (currentGameId != achievement.Game.Id)
+        {
+        <li class="game" data-role="separator">
+            <h3>@achievement.Game.Name</h3>
+        </li>
+            currentGameId = achievement.Game.Id;
+        }
+        <li class="achievement">
+            <img class="left" src="@achievement.ImageUrl" alt="@achievement.Name" />
+            <div class="text">
+                @{var checkboxId = "a" + achievement.Id;}
+                <input type="checkbox" value="@achievement.Id" id="@checkboxId" />
+                <label for="@checkboxId">
+                    <span class="name">@achievement.Name</span> 
+                    <span class="description">@achievement.Description</span></label>
+            </div>
+        </li>
+    }
+</ul>
+<script type="text/javascript">
+    _newAchievements = @Html.Raw(ViewBag.Achievements) ;
+</script>

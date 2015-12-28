@@ -1,0 +1,35 @@
+#summary Frequently asked questions from users
+#labels Deprecated,Phase-Support
+
+<wiki:toc max_depth="1" />
+
+=How do I use Facebook Steam Achievements?=
+Please see the application [Help help page].
+
+=I don't own game X. Why is it my games list?=
+Some free games, such as Alien Swarm, will show up in your list even if you have never played them. Feel free to ignore them.
+
+=The app doesn't show some of my achievements for game X. Where are they?=
+Not all achievements are made available to the [https://partner.steamgames.com/documentation/community_data Steam Community XML API], the API used by Facebook Steam Achievements. It seems that these are maintained separately from the game itself. The games below are known to have missing achievements. We'll update this list if we learn of any others.
+
+  * Alien Swarm
+  * Half-Life: Episode 1
+  * Half-Life: Episode 2
+  * Team Fortress 2
+
+Unfortunately, there's not much we can do about missing achievements. You can help by posting on the [http://forums.steampowered.com/forums/forumdisplay.php?f=316 Steam forums].
+
+=I turned on Auto Update. Why did it publish old achievements?=
+Please see the [AutoUpdate auto update page] for more information how it works.
+
+=Why does nothing happen when I select a few achievements on the Publish page and click publish?=
+If you have a long list of unpublished achievements, you may have to scroll down the page so see the publish dialog. We were able to work around this issue for a while, but Facebook changed their API on use again. You can help by voting for these bugs:
+
+http://bugs.developers.facebook.net/show_bug.cgi?id=10890
+http://bugs.developers.facebook.net/show_bug.cgi?id=11785
+
+=Where can I offer suggestions?=
+If you have an idea on how to improve Steam Achievements for Facebook, please suggest it on the [http://fbsteamachievements.uservoice.com feedback forum].
+
+=Additional Questions=
+If you have a question that not answered here, you can leave a comment on this page or post on the [http://www.facebook.com/SteamAchievements application profile page].

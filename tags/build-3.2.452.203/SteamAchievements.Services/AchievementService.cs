@@ -1,0 +1,260 @@
+#region License
+
+// Copyright 2010 John Rummell
+// 
+// This file is part of SteamAchievements.
+// 
+//     SteamAchievements is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     SteamAchievements is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with SteamAchievements.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using SteamAchievements.Data;
+
+namespace SteamAchievements.Services
+{
+    [ServiceErrorBehaviour(typeof (HttpErrorHandler))]
+    public class AchievementService : IAchievementService
+    {
+        private readonly IAchievementManager _achievementManager;
+        private readonly ISteamCommunityManager _communityService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AchievementService"/> class.
+        /// </summary>
+        /// <param name="achievementManager">The achievement manager.</param>
+        /// <param name="communityManager">The community manager.</param>
+        public AchievementService(IAchievementManager achievementManager, ISteamCommunityManager communityManager)
+        {
+            _achievementManager = achievementManager;
+            _communityService = communityManager;
+        }
+
+        #region IAchievementService Members
+
+        /// <summary>
+        /// Gets the games.
+        /// </summary>
+        /// <returns>All <see cref="Game"/>s.</returns>
+        public ICollection<Game> GetGames(string steamUserId)
+        {
+            if (steamUserId == null)
+            {
+                throw new ArgumentNullException("steamUserId");
+            }
+
+            return _communityService.GetGames(steamUserId, CultureHelper.GetLanguage()).ToList();
+        }
+
+        /// <summary>
+        /// Updates the achievements.
+        /// </summary>
+        /// <param name="steamUserId">The steam user id.</param>
+        /// <param name="language">The language.</param>
+        /// <returns>
+        /// true if successful, else false.
+        /// </returns>
+        public int UpdateAchievements(string steamUserId, string language = null)
+        {
+            if (steamUserId == null)
+            {
+                throw new ArgumentNullException("steamUserId");
+            }
+
+            if (language == null)
+            {
+                language = CultureHelper.GetLanguage();
+            }
+
+            ICollection<UserAchievement> achievements =
+                _communityService.GetClosedAchievements(steamUserId, language);
+
+            Data.User user = _achievementManager.GetUser(steamUserId);
+            if (user == null)
+            {
+                throw new ArgumentException("User does not exist.", "steamUserId");
+            }
+
+            int updated = _achievementManager.UpdateAchievements(achievements.ToDataAchievements(user.FacebookUserId));
+
+            return updated;
+        }
+
+        /// <summary>
+        /// Gets the profile.
+        /// </summary>
+        /// <param name="steamUserId">The steam user id.</param>
+        /// <returns></returns>
+        public SteamProfile GetProfile(string steamUserId)
+        {
+            return _communityService.GetProfile(steamUserId);
+        }
+
+        /// <summary>
+        /// Gets the unpublished achievements newer than the given date.
+        /// </summary>
+        /// <param name="steamUserId">The steam user id.</param>
+        /// <param name="oldestDate">The oldest date.</param>
+        /// <param name="language">The language.</param>
+        /// <returns>
+        /// The achievements that haven't been published yet.
+        /// </returns>
+        public ICollection<Achievement> GetUnpublishedAchievements(string steamUserId, DateTime? oldestDate, string language = null)
+        {
+            if (steamUserId == null)
+            {
+                throw new ArgumentNullException("steamUserId");
+            }
+
+            if (language == null)
+            {
+                language = CultureHelper.GetLanguage();
+            }
+
+            IEnumerable<Game> games = _communityService.GetGames(steamUserId, language);
+
+            ICollection<Data.Achievement> dataAchievements;
+            if (oldestDate == null)
+            {
+                dataAchievements = _achievementManager.GetUnpublishedAchievements(steamUserId);
+            }
+            else
+            {
+                dataAchievements = _achievementManager.GetUnpublishedAchievements(steamUserId, oldestDate.Value);
+            }
+
+            IEnumerable<Data.Achievement> missingNames = 
+                dataAchievements.Where(a => !a.AchievementNames.Where(n => n.Language == language).Any());
+
+            if (missingNames.Any())
+            {
+                IEnumerable<Achievement> communityAchievements = 
+                    _communityService.GetAchievements(steamUserId, language)
+                    .Select(ua => ua.Achievement);
+
+                foreach (Data.Achievement achievement in missingNames)
+                {
+                    Achievement missing =
+                        communityAchievements
+                            .Where(a => a.Game.Id == achievement.GameId && a.ApiName == achievement.ApiName)
+                            .SingleOrDefault();
+
+                    if (missing != null)
+                    {
+                        achievement.AchievementNames.Add(new AchievementName
+                                                             {
+                                                                 Language = language,
+                                                                 Name = missing.Name,
+                                                                 Description = missing.Description
+                                                             });
+                    }
+                }
+            }
+
+            List<Achievement> achievements = dataAchievements.ToSimpleAchievementList(games, language);
+
+            return achievements;
+        }
+
+        /// <summary>
+        /// Updates the Published field for the given achievements for the given user.
+        /// </summary>
+        /// <param name="steamUserId">The steam user id.</param>
+        /// <param name="achievementIds">The ids of the achievements to publish.</param>
+        /// <returns>
+        /// true if successful, else false.
+        /// </returns>
+        public bool PublishAchievements(string steamUserId, IEnumerable<int> achievementIds)
+        {
+            if (steamUserId == null)
+            {
+                throw new ArgumentNullException("steamUserId");
+            }
+
+            if (achievementIds == null)
+            {
+                throw new ArgumentNullException("achievementIds");
+            }
+
+            _achievementManager.UpdatePublished(steamUserId, achievementIds);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Hides the given user's achievements.
+        /// </summary>
+        /// <param name="steamUserId">The steam user id.</param>
+        /// <param name="achievementIds">The ids of the achievements to hide.</param>
+        public bool HideAchievements(string steamUserId, IEnumerable<int> achievementIds)
+        {
+            _achievementManager.UpdateHidden(steamUserId, achievementIds);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Updates the new user's achievements and hides any that are more than 2 days old.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        public void UpdateNewUserAchievements(User user)
+        {
+            bool exists = _achievementManager.GetUser(user.FacebookUserId) != null;
+
+            if (!exists)
+            {
+                throw new ArgumentException("The given user does not exist", "user");
+            }
+
+            int updatedCount = UpdateAchievements(user.SteamUserId);
+            if (updatedCount > 0)
+            {
+                // hide achievements more than two days old
+                ICollection<Achievement> achievements =
+                    GetUnpublishedAchievements(user.SteamUserId, DateTime.UtcNow.Date.AddDays(-2));
+                IEnumerable<int> achievementIds = achievements.Select(achievement => achievement.Id);
+                HideAchievements(user.SteamUserId, achievementIds);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        private void Dispose(bool disposing)
+        {
+            lock (this)
+            {
+                if (disposing)
+                {
+                    _achievementManager.Dispose();
+                    _communityService.Dispose();
+                }
+            }
+        }
+    }
+}

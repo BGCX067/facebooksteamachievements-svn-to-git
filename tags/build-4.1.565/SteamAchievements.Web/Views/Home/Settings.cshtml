@@ -1,0 +1,58 @@
+﻿@model SettingsViewModel
+@{
+    ViewBag.Title = Strings.TitleSettings;
+}
+<h1>
+    Settings</h1>
+@if (ViewBag.Success == true)
+{
+    <div id="saveSuccess" style="display: none;">
+        @Strings.SettingsSuccess</div>
+}
+@using (Html.BeginForm("SaveSettings", "Home"))
+{
+    @Html.HiddenFor(model => model.FacebookUserId)
+    @Html.HiddenFor(model => model.SignedRequest)
+    @Html.HiddenFor(model => model.EnableLog)
+    @Html.ValidationMessageFor(model => model.SteamUserId)
+    <fieldset class="settings">
+        <legend>@Strings.SettingsCustomUrl</legend>
+        <div>
+            <div>
+                <div class="left">
+                    @Html.LabelFor(model => model.SteamUserId, "http://steamcommunity.com/id/")
+                    @Html.TextBoxFor(model => model.SteamUserId, new { maxlength = 50 })
+                </div>
+                <div id="steamIdVerified" class="left hidden">
+                    @Html.Partial("_IconPartial", "check")
+                </div>
+                <div id="steamIdError" class="ui-state-error-text left hidden">
+                    @Html.Partial("_IconPartial", "alert")
+                </div>
+            </div>
+            <br class="clear" />
+        </div>
+        @Html.HelpLink(Strings.ButtonHelp, "Configure_your_Steam_Community_Profile")
+    </fieldset>
+    <fieldset class="settings">
+        <legend>Publish Options</legend>
+        <div>
+            @Html.CheckBoxFor(model => model.AutoUpdate)
+            @Html.LabelFor(model => model.AutoUpdate)
+        </div>
+        <div>
+            @Html.CheckBoxFor(model => model.PublishDescription)
+            @Html.LabelFor(model => model.PublishDescription)
+        </div>
+    </fieldset>
+    <p>
+        <button type="submit" id="saveButton" class="save" data-icon="check">
+            Save</button>
+        <img id="saveImage" class="loading" src="@Url.Content("~/Content/images/ajax-loader.gif")" alt="Saving..."
+                 style="display: none" />
+    </p>
+}
+@section scripts
+{
+    @Scripts.Render(BundlePaths.SettingsScripts)
+}

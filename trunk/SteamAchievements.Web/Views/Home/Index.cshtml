@@ -1,0 +1,26 @@
+﻿@model IndexViewModel
+@{
+    ViewBag.Title = Strings.TitleHome;
+}
+@Html.HiddenFor(model => model.SteamUserId)
+@Html.HiddenFor(model => model.SignedRequest)
+<div id="profileDiv">
+</div>
+<fieldset id="gamesContainer" class="hidden">
+    <legend>Games</legend>
+    <div>
+        <p>
+            @Strings.GamesIntructions
+            @Html.HelpLink(Strings.ButtonHelp, "Supported_Games")
+        </p>
+        <img id="loadingGames" class="loading" src="@Url.Content("~/Content/images/ajax-loader.gif")" alt="Loading..." />
+    </div>
+    <div id="gamesDiv" class="games">
+    </div>
+</fieldset>
+@Html.HiddenFor(model => model.EnableLog)
+@Html.HiddenFor(model => model.LogOnRedirectUrl)
+@section scripts
+{
+    @Scripts.Render(BundlePaths.IndexScripts)
+}

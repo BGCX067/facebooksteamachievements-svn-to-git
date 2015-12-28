@@ -1,0 +1,29 @@
+#summary How to contribute.
+#labels Phase-Implementation,Featured
+
+= How can I help? =
+
+We are currently looking for skilled developers to submit patches for [http://code.google.com/p/facebooksteamachievements/issues/list open issues].
+
+
+= Guidelines =
+
+== Compiling ==
+
+You can compile the solution with [http://www.microsoft.com/express/downloads/ Visual Studio 2010 Express] or [http://www.icsharpcode.net/opensource/sd/ SharpDevelop 4]. Both are free and offer different feature sets. The main differences are that Visual Studio 2010 Express has a WYSIWYG markup editor, but lacks the add-in support of SharpDevelop. SharpDevelop on the other hand does not have a WYSIWYG markup editor. You can view a full comparison at [http://community.sharpdevelop.net/blogs/mattward/pages/VisualStudioExpressComparison.aspx Visual Studio Express and SharpDevelop Compared].
+
+The ideal IDE is Visual Studio 2010 Pro with ReSharper, VisualSVN, and NuGet.
+
+== Code Style ==
+
+Please try to adhere to the existing coding style. There are [http://www.jetbrains.com/resharper/ ReSharper] settings files in the project root that will help keep the style consistent.
+
+== Testing ==
+
+For server side code changes, please include new or updated [http://www.nunit.org/ NUnit] Unit Tests. For client side GUI changes, please test manually.
+
+== Submit a patch ==
+To submit a contribution, whether its documentation, bug fixes, new features, etc, please attach a [http://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-patch.html Subversion patch] with your changes to the relevant issue.
+
+= Questions? =
+If you have questions, please ask on the [http://groups.google.com/group/facebooksteamachievements-discuss Developer Discussion Group].

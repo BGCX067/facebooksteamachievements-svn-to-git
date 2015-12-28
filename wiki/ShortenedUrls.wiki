@@ -1,0 +1,8 @@
+#summary Contains shortened links for various application web pages.
+#labels Phase-Implementation
+
+Certain links are shortened with [http://goo.gl/ Google url shortener] so that they fit on the Facebook application page better.
+
+|| *Long URL* || *Short URL* ||
+|| http://fbsteamachievements.uservoice.com/forums/61681-general || http://goo.gl/QbctK ||
+|| http://code.google.com/p/facebooksteamachievements/wiki/Help || http://goo.gl/58PKH ||
